@@ -65,10 +65,13 @@
 	# path and the /* wildcard must be matched or uploads 405 by falling
 	# through to the frontend's catch-all route. `handle` only takes a
 	# single path argument, so use a named matcher for both patterns.
+	# Do NOT rewrite Host here: presigned S3 URLs are SigV4-signed with
+	# `host` in SignedHeaders using the public domain, so MinIO must see
+	# that same Host to verify the signature -- rewriting it to the
+	# internal upstream address causes SignatureDoesNotMatch on every
+	# presigned GET/PUT.
 	@bucket path /{$BUCKET_NAME} /{$BUCKET_NAME}/*
 	handle @bucket {
-		reverse_proxy {$BUCKET_ENDPOINT} {
-			header_up Host {upstream_hostport}
-		}
+		reverse_proxy {$BUCKET_ENDPOINT}
 	}
 }
