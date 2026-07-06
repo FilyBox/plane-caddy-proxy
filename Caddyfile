@@ -60,7 +60,11 @@
 	}
 
 	# Attachments, uploads (Minio or S3)
-	handle /{$BUCKET_NAME}/* {
+	# S3 presigned POST uploads target the bucket root path exactly
+	# (e.g. POST /{bucket}), not just /{bucket}/{key}, so both the bare
+	# path and the /* wildcard must be matched or uploads 405 by falling
+	# through to the frontend's catch-all route.
+	handle /{$BUCKET_NAME} /{$BUCKET_NAME}/* {
 		reverse_proxy {$BUCKET_ENDPOINT} {
 			header_up Host {upstream_hostport}
 		}
