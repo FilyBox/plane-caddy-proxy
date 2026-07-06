@@ -63,8 +63,10 @@
 	# S3 presigned POST uploads target the bucket root path exactly
 	# (e.g. POST /{bucket}), not just /{bucket}/{key}, so both the bare
 	# path and the /* wildcard must be matched or uploads 405 by falling
-	# through to the frontend's catch-all route.
-	handle /{$BUCKET_NAME} /{$BUCKET_NAME}/* {
+	# through to the frontend's catch-all route. `handle` only takes a
+	# single path argument, so use a named matcher for both patterns.
+	@bucket path /{$BUCKET_NAME} /{$BUCKET_NAME}/*
+	handle @bucket {
 		reverse_proxy {$BUCKET_ENDPOINT} {
 			header_up Host {upstream_hostport}
 		}
